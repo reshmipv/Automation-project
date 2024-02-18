@@ -1,0 +1,230 @@
+Pagepackage--------------------
+
+package pagepkg;
+
+import java.util.List;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.PageFactory;
+
+public class KitabayPage {
+WebDriver driver;
+	
+	@FindBy(xpath="//*[@id=\"CustomerEmail\"]")
+	WebElement kitabayemaill;
+	
+	@FindBy(xpath="//*[@id=\"CustomerPassword\"]")
+	WebElement kitabaypswd;
+	
+	@FindBy(xpath  ="//*[@id=\"customer_login\"]/button")
+	WebElement kitabaylogin;
+	
+	@FindBy(xpath ="//*[@id=\"shopify-section-sections--16765699850463__header\"]/div[1]/header/div/div/div[2]/div[1]/div/nav/div/div[4]/a/span")
+	WebElement gifts;
+	
+	@FindBy(xpath = "//*[@id=\"accordion-collections\"]/div[1]/a")
+	WebElement adventure;
+	
+	@FindBy(xpath = "//*[@id=\"Huratips-Loop\"]/div[1]/product-grid-item/product-grid-item-variant/div[2]/a/div/product-grid-item-image/img")
+	WebElement firstbook;
+	
+	@FindBy(xpath = "//*[@id=\"product-form-template--16765707321567__main-8312691065055\"]/div[1]/div/div[2]/button")
+	WebElement addtocart;
+	public KitabayPage(WebDriver driver)
+    {
+        this.driver=driver;
+        PageFactory.initElements(driver,this);
+    }
+	public void setvalues(String email,String pwd)
+	{
+		kitabayemaill.clear();
+		kitabayemaill.sendKeys(email);
+		kitabaypswd.clear();
+		kitabaypswd.sendKeys(pwd);
+	}
+	public void loginbutton()
+	{
+		kitabaylogin.click();
+	}
+	public void giftsclick()
+	{
+		 gifts.click();
+	}
+	public void adventureclick()
+	{
+		adventure.click();
+		
+	}
+	public void firstbookclick()
+	{
+		firstbook.click();
+	}
+	public void addtocarttclick() {
+		addtocart.click();
+	}
+	public void mysteryboxclick()
+	{
+		Actions act=new Actions(driver); 
+        WebElement mystery=driver.findElement(By.xpath("//*[@id=\"HeaderNavigation\"]/nav/ul/li[4]/a/span[1]"));
+        act.moveToElement(mystery).perform();
+	}
+	public void  titleVerification() throws Exception
+	{
+	 List<WebElement> linkdetails=driver.findElements(By.tagName("a"));
+	 System.out.println("Total no of links="+linkdetails.size());
+	 for(WebElement element : linkdetails)
+		 
+	 {
+		String link=element.getAttribute("href");
+		String linktext=element.getText();
+		System.out.println("link="+link);
+		System.out.println("text="+linktext);
+	 }
+		
+	}
+	
+	
+	
+
+
+}
+Basepackage---------------------------------------------------------------------------------------
+
+package testpkg;
+
+import java.time.Duration;
+
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.testng.annotations.BeforeClass;
+
+public class KiabayBase {
+	public static WebDriver driver;
+	@BeforeClass
+	public void setUp()
+	{
+		driver=new ChromeDriver();
+		driver.get("https://kitabay.com");
+		driver.manage().window().maximize();
+		driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(30));
+		
+		
+	}
+
+}
+
+Testpackage------------------------------------------------------------------------------------------
+package testpkg;
+
+import org.testng.annotations.Test;
+
+import pagepkg.KitabayPage;
+import utilities.Excellutilities;
+
+public class KitabatTest extends KiabayBase {
+	
+	@Test(priority = 0)
+	public void login()
+	{
+		KitabayPage lp=new KitabayPage(driver);
+		String xl="C:\\Users\\hp\\Desktop\\Book2.xlsx";
+		
+		String sheet="sheet1";
+		
+		int rowCount= Excellutilities.getRowCount(xl, sheet);
+		
+		for(int i=1;i<=rowCount;i++)
+		{
+			String UserName= Excellutilities.getCellValue(xl, sheet, i, 0);
+			
+			System.out.println("username"+UserName);
+			 
+		    String pwd= Excellutilities.getCellValue(xl, sheet, i, 1);
+		     
+		    System.out.println("password"+pwd);
+		    //passing username and password as parameters
+		    lp.setvalues(UserName, pwd);
+		    lp.loginbutton();
+		   
+		   
+		}
+		@Test(priority=1)
+		public void addtocart() throws Exception
+	{ 
+		KitabayPage kb=new KitabayPage(driver);
+		kb.loginbutton();
+		kb.giftsclick();
+		kb.adventureclick();
+		kb.firstbookclick();
+		kb.addtocarttclick();
+		kb.mysteryboxclick();
+		kb.titleVerification(); 
+	}
+
+}
+utilities--------------------------------------------------------------------------------
+package utilities;
+
+import java.io.FileInputStream;
+
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+public class Excellutilities {
+	public static String getCellValue(String xl,String sheet,int r,int c)
+    {
+  	  try
+  	  {
+  		  FileInputStream fi=new FileInputStream(xl);
+  		  XSSFWorkbook wb=  new XSSFWorkbook(fi);
+  		  
+  		  XSSFCell cell =wb.getSheet(sheet).getRow(r).getCell(c);
+  		  if(cell.getCellType()==CellType.STRING)
+  		  {
+  			  return cell.getStringCellValue();
+  		  }
+  		  else
+  		  {
+  			  //double v=cell.getNumericCellValue();
+  			  //int v=(int)v;
+  			  //return String.valueOf(val);
+  			  return cell.getRawValue();
+  			  
+  		  }
+  		  
+  		   
+  		  
+ }
+  	  catch(Exception e)
+  	  {
+  		  return"";
+  	  }
+    }
+
+	public static int getRowCount (String xl,String sheet) {
+		
+		try
+		{
+			FileInputStream fi= new FileInputStream(xl);
+			XSSFWorkbook wb=new XSSFWorkbook(fi);
+			
+			return wb.getSheet(sheet).getLastRowNum();
+			
+		}
+		catch(Exception e)
+		{
+		return 0;
+		}
+	}
+
+
+
+}
+
+
+
